@@ -61,13 +61,13 @@ class TaskController extends Controller
 
 
     }
-
-    public function show(Task $task)
-    {
-        return Inertia::render('Tasks/Show', [
-            'task' => $task,
-        ]);
-    }
+//
+//    public function show(Task $task)
+//    {
+//        return Inertia::render('Tasks/Show', [
+//            'task' => $task,
+//        ]);
+//    }
 
     public function edit(Request $request,Task $task)
     {
@@ -147,7 +147,7 @@ class TaskController extends Controller
     public function updateStatus(Request $request, Task $task)
     {
         $request->validate([
-            'status' => 'required|in:To Do,In Progress,Completed',
+            'status' => 'required|in:'.Task::statuses(true),
         ]);
 
         $task->update([

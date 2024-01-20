@@ -14,15 +14,17 @@
 
     const page = usePage();
     const permissions = computed(() => page.props.permissions);
+    const statuses = computed(() => page.props.statuses);
     const auth = computed(() => page.props.auth.user);
+    const pause = computed(() => statuses.value.find((item) => item.return === true));
+    const completed = computed(() =>  page.props.statuses.find((item) => item.last === true));
+    const first = computed(() =>  page.props.statuses.find((item) => item.first === true));
 
     function can(value){
         return permissions.value.some((item) => item.name === value);
     }
 
     onMounted(() => {
-
-
         Echo.private("App.Models.User." + auth.value.id).notification((item) => {
             if(item.code === "UPDATED"){
                 let task = item.task;
@@ -78,19 +80,47 @@
         });
     }
 
-    function setStatusRecord(id){
-        let todo = id.status === 'To Do';
-        let inProgress = id.status === 'In Progress';
-        const form = useForm({
-            status : todo ? 'In Progress' : (inProgress ? 'Completed' : id.status)
-        });
+    function findAndReturnNext(value) {
+        value = statuses.value.find((item) => item.id === value);
+        const index = statuses.value.indexOf(value);
+        if (index !== -1 && index < statuses.value.length - 1) {
+            return statuses.value[index + 1];
+        } else {
+            return null;
+        }
+    }
+
+
+    function setStatusRecord(id,status){
+
+        let d;
+        if(status){
+            d = {
+                status : status
+            }
+        }
+        else {
+            // d = {
+            //     status : todo ? 'In Progress' : (inProgress ? 'Completed' : id.status)
+            // }
+
+            d = {
+                status : id.status === pause.value.id ? findAndReturnNext(pause.value.next).id : findAndReturnNext(id.status).id
+            }
+        }
+
+
+        const form = useForm(d);
 
         form.put(route('tasks.updateStatus',{ 'task': id }), {
             onSuccess: () => {
                 setToast('Task has been updated');
                 // form.reset('title', 'description','priority','assigned_to','due_date');
             },
-            onError : () => setToast('Error',true)
+            onError : (e) =>{
+                setToast('Error',true);
+                console.log(e);
+            }
         });
     }
 
@@ -121,13 +151,13 @@
         });
     };
 
-    const showSetStatusConfirm = (event) => {
+    const showSetStatusConfirm = (event,status) => {
         confirm.require({
             message: 'Do you want to update this record?',
             icon: 'pi pi-info-circle',
             acceptClass: 'p-button-green p-button-sm',
             accept: () => {
-                setStatusRecord(event);
+                setStatusRecord(event,status);
             },
             reject: () => {
                 console.log('reject');
@@ -136,6 +166,26 @@
     };
 
 
+    function buildClass(data){
+        let obj = {};
+        statuses.value.map((item) => {
+            if((data.status === pause.value.id) && (item.id === pause.value.next))
+            {
+                obj[item.icon] = true;
+            }
+            else {
+                if (item.icon)
+                    obj[item.icon] = ((data.status === item.id) && (data.status !== pause.value.id))  && (data.status !== completed.value.id);
+            }
+        });
+        return obj;
+    }
+
+    function buildPauseClass(data){
+        let obj = {};
+        obj[pause.value.icon] = data.status !== completed.value.id && (data.status !== first.value.id ) && (data.status !== pause.value.id);
+        return obj;
+    }
 
     const columns = [
         { data: 'id' },
@@ -147,19 +197,7 @@
     ];
 
     const getSeverity = (task) => {
-        switch (task.status) {
-            case 'To Do':
-                return 'warning';
-
-            case 'In Progress':
-                return 'blue';
-
-            case 'Completed':
-                return 'success';
-
-            default:
-                return null;
-        }
+        return statuses.value.find((item) => item.id === task.status).color;
     }
 
 </script>
@@ -191,7 +229,10 @@
             </Column>
             <Column  header="Actions" :exportable="false" style="min-width:8rem">
                 <template #body="{ data }">
-                    <i @click="showSetStatusConfirm(data)" class="pi " :class="{ 'pi-user-edit text-warning-500 ': data.status === 'To Do', 'pi-check-circle text-green-500': data.status === 'In Progress' }"></i>
+                    <div>
+                        <i @click="showSetStatusConfirm(data,pause['id'])" class="pi " :class="buildPauseClass(data)"></i>
+                    </div>
+                    <i @click="showSetStatusConfirm(data)" class="pi " :class="buildClass(data)"></i>
                 </template>
 
             </Column>

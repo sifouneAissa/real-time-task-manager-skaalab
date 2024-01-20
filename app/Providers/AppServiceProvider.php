@@ -29,5 +29,9 @@ class AppServiceProvider extends ServiceProvider
         Inertia::share('permissions', function () {
             return auth()->user()?->getPermissionsViaRoles() ?? [];
         });
+
+        Inertia::share('statuses', function () {
+            return config('default.task_statuses');
+        });
     }
 }

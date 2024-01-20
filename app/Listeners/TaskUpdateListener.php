@@ -27,12 +27,10 @@ class TaskUpdateListener
      */
     public function handle($event)
     {
-        //
-        $send = true;
-        if($event->code !== "DELETED")
-        $send = $event->task->assignedTo->id != auth()->user()->id;
+        try {
+            Notification::send($event->users,new TaskUpdatedNotification($event->code,$event->task));
+        }catch (\Exception $e){
 
-        if($send)
-        Notification::send($event->users,new TaskUpdatedNotification($event->code,$event->task));
+        }
     }
 }

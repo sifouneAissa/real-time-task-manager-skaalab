@@ -16,7 +16,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
         $this->call(RolePermissionSeeder::class);
 
         $user = User::query()->create([
@@ -26,5 +25,11 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $user->assignRole('admin');
+
+
+
+        \App\Models\User::factory(10)->create([
+            'password' => Hash::make('password'),
+        ]);
     }
 }

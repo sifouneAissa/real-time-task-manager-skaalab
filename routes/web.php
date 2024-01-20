@@ -17,10 +17,6 @@ use Inertia\Inertia;
 */
 
 
-Route::get('/test-notification', function () {
-    event(new \App\Events\TaskUpdateEvent([\App\Models\User::query()->find(1)],'UPDATED',\App\Models\Task::first()));
-});
-
 Route::get('/', function () {
     return Inertia::render('Welcome', [
         'canLogin' => Route::has('login'),
@@ -45,6 +41,5 @@ Route::get('tasks/{task}/edit', [\App\Http\Controllers\TaskController::class,'ed
 Route::put('tasks/{task}', [\App\Http\Controllers\TaskController::class,'update'])->can('edit task')->name('tasks.update');
 Route::put('tasks/status/{task}', [\App\Http\Controllers\TaskController::class,'updateStatus'])->name('tasks.updateStatus');
 Route::delete('tasks/{task}', [\App\Http\Controllers\TaskController::class,'destroy'])->can('delete task')->name('tasks.delete');
-//Route::get('tasks', [\App\Http\Controllers\TaskController::class,'create']);
 
 require __DIR__.'/auth.php';

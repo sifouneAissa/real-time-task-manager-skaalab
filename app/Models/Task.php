@@ -34,4 +34,15 @@ class Task extends Model
         return $this->assignedTo->name;
     }
 
+    public static function statuses($rules=false){
+
+        $statuses =  array_map(function ($item){
+            return $item['id'];
+        },config("default.task_statuses"));
+
+        if($rules) $statuses = implode(',',$statuses);
+
+        return $statuses;
+    }
+
 }

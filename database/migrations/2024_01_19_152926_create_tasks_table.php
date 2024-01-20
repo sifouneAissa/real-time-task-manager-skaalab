@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->text('description')->nullable();
-            $table->enum('status', ['To Do', 'In Progress', 'Completed'])->default('To Do');
+            $table->enum('status', \App\Models\Task::statuses())->default('To Do');
             $table->enum('priority', ['High', 'Medium', 'Low'])->default('Medium');
             $table->date('due_date')->nullable();
             $table->foreignId('user_id')->constrained();
