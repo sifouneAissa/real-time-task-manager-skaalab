@@ -27,7 +27,6 @@ class DatabaseSeeder extends Seeder
         $user->assignRole('admin');
 
 
-
         \App\Models\User::factory(10)->create([
             'password' => Hash::make('password'),
         ]);
